@@ -1,0 +1,64 @@
+SummonTypes = ['soldier']  # Define the types of troops that can be summoned (soldiers in this case)
+
+def summonTroops():  # Define the function to summon troops
+    # Summon soldiers and archers if enough gold is available
+    for summonType in SummonTypes:  # Loop through summon types
+        if hero.gold >= hero.costOf(summonType):  # Check if hero has enough gold to summon the troop
+            hero.summon(summonType)  # Summon the troop
+
+def commandTroops():  # Define the function to command troops
+    # Command soldiers to attack the nearest enemy and archers to provide ranged support
+    for friend in hero.findFriends():  # Loop through all of the hero's allies
+        enemy = friend.findNearestEnemy()  # Find the nearest enemy for each friend
+        if friend.type == 'soldier' and enemy:  # If the friend is a soldier and there's an enemy
+            hero.command(friend, 'attack', enemy)  # Command the soldier to attack the enemy
+
+def collectCoins():  # Define the function to collect coins dropped by enemies
+    # Collect coins dropped by enemies to fund troop summoning
+    coins = hero.findItems()  # Find all the coins on the battlefield
+    for coin in coins:  # Loop through each coin
+        hero.move(coin.pos)  # Move the hero to collect the coin
+
+def heroAttack():  # Define the function for the hero to attack
+    # Hero actively attacks the most dangerous enemies
+    enemy = hero.findNearestEnemy()  # Find the most dangerous enemy
+    if enemy:  # If there's an enemy to attack
+        if hero.distanceTo(enemy) > 10:  # If the hero is too far away from the enemy
+            hero.move(enemy.pos)  # Move towards the enemy
+        elif hero.isReady('bash'):  # If the hero's bash skill is ready
+            hero.bash(enemy)  # Use the bash attack on the enemy
+        elif hero.isReady('slam'):  # If the hero's slam skill is ready
+            hero.slam(enemy)  # Use the slam attack on the enemy
+        elif hero.isReady('throw-charge'):  # If the hero's throw-charge skill is ready
+            hero.throwCharge(15)  # Use the throw-charge attack on the enemy
+        elif hero.isReady("chain-lightning"):  # If the hero's chain-lightning skill is ready
+            hero.cast("chain-lightning", enemy)  # Cast chain lightning on the enemy
+        else:  # If none of the special abilities are ready
+            hero.attack(enemy)  # Perform a regular attack on the enemy
+
+def main():  # Define the main function
+    # Move to the Yeti's location and defeat it
+    hero.moveXY(58, 23)  # Move to the Yeti's location
+    yeti = hero.findNearestEnemy()  # Find the nearest enemy (Yeti)
+    while yeti and yeti.health > 0:  # While there's a Yeti and it has health
+        if hero.isReady('bash'):  # If the hero's bash skill is ready
+            hero.bash(yeti)  # Use the bash attack on the Yeti
+        else:
+            hero.attack(yeti)  # Otherwise, perform a regular attack on the Yeti
+   
+    # Collect coins dropped by the Yeti
+    collectCoins()  # Call the collectCoins function
+    hero.wait(30)  # Wait for 30 seconds
+   
+    # Move to the summoning area
+    hero.moveXY(19, 40)  # Move to the summoning location
+   
+    # Main loop to summon troops, command them, and attack enemies
+    while True:  # Keep looping indefinitely
+        summonTroops()  # Summon troops if enough gold is available
+        commandTroops()  # Command the troops to attack enemies
+        collectCoins()  # Collect coins to fund summoning
+        heroAttack()  # Attack the most dangerous enemy
+
+# Execute the main function
+main()  # Run the main function
